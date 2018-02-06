@@ -5,8 +5,9 @@
 #
 # Changelog
 # 
-# [0.9] - unreleased
+# [0.9] - 2018-02-06
 #   Added
+#     - first release on github
 #     - '--reason' parameter to nmap
 #     - UDP scanning
 #     - attempt a curl call on website root directory
