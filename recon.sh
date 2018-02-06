@@ -1,10 +1,15 @@
-#!/bin/bash
+#!/usr/bin/env bash
+#
 # recon.sh - reconnaissance script for first stage of a penetration test
 # 
 # Made with love, vim and shell by thesp0nge - paolo@codiceinsicuro.it
 #
 # Changelog
 # 
+# [0.10] - unreleased
+#   Added
+#     - colours
+#
 # [0.9] - 2018-02-06
 #   Added
 #     - first release on github
@@ -39,36 +44,93 @@
 #   Added
 #     - nmap, searchexploit, dirb and nikto scripting
 
+RESTORE=$(echo -en '\033[0m')
+RED=$(echo -en '\033[00;31m')
+GREEN=$(echo -en '\033[00;32m')
+YELLOW=$(echo -en '\033[00;33m')
+BLUE=$(echo -en '\033[00;34m')
+MAGENTA=$(echo -en '\033[00;35m')
+PURPLE=$(echo -en '\033[00;35m')
+CYAN=$(echo -en '\033[00;36m')
+LIGHTGRAY=$(echo -en '\033[00;37m')
+LRED=$(echo -en '\033[01;31m')
+LGREEN=$(echo -en '\033[01;32m')
+LYELLOW=$(echo -en '\033[01;33m')
+LBLUE=$(echo -en '\033[01;34m')
+LMAGENTA=$(echo -en '\033[01;35m')
+LPURPLE=$(echo -en '\033[01;35m')
+LCYAN=$(echo -en '\033[01;36m')
+WHITE=$(echo -en '\033[01;37m')
+
+function open_port_list() {
+
+  case "$OSTYPE" in
+    solaris*) echo "SOLARIS" ;;
+    darwin*)  ports=$(grep -oE '\d{1,5}/open' $1 | cut -f 1 -d "/" | tr "\n" "," | sed 's/.$//') ;;
+    linux*)   ports=$(grep -oP '\d{1,5}/open' $1 | cut -f 1 -d "/" | tr "\n" "," | sed 's/.$//') ;;
+    bsd*)     echo "BSD" ;;
+    msys*)    echo "WINDOWS" ;;
+    *)        echo "unknown: $OSTYPE" ;;
+  esac
+  echo $ports
+}
+function greeting() {
+  echo "$APPNAME v$VERSION - paolo@codiceinsicuro.it"
+}
+
+function help_me() {
+  greeting
+  echo -e "\n"
+  echo "$APPNAME is a reconnaissance script to be used to collect information to be used in a penetration test."
+}
+
+function debug() {
+  echo ${LYELLOW}"[D]"$1${RESTORE}
+}
+function warning() {
+  echo ${YELLOW}$1${RESTORE}
+}
+function info() {
+  echo ${GREEN}$1${RESTORE}
+}
+function error() {
+  echo ${RED}$1 ${RESTORE}
+}
+
 function whatweb_web {
-	echo "[*] launching webweb on $1"
-	$WHATWEB -v $1 > $OUTPUT_FOLDER_BASE$1/$1_whatweb
+  if [ ! -x $WHATWEB ]; then
+    warning "[!] whatweb not installed"
+  else
+    info "[*] launching whatweb on $1"
+    $WHATWEB -v $1 > $OUTPUT_FOLDER_BASE$1/$1_whatweb
+  fi
 }
 function fetch_http_web_root {
   if [ -z $2 ]; then
-    port = 80
+    port= 80
   else
-    port = $2
+    port= $2
   fi
-  echo "[*] fetching website root on $1 (port $port)" 
+  info "[*] fetching website root on $1 (port $port)" 
   $CURL -i -L http://$1 
 }
 
 function fetch_https_web_root {
   if [ -z $2 ]; then
-    port = 443
+    port= 443
   else
-    port = $2
+    port= $2
   fi
-  echo "[*] fetching website root on $1 (port $port) - HTTPS" 
+  info "[*] fetching website root on $1 (port $port) - HTTPS" 
   $CURL -i -L https://$1 
 	$NMAP -sV -p $port --script=ssl-heartbleed.nse $1 -oA $OUTPUT_FOLDER_BASE$1/$1_$port_hearbleed
 }
 
 
 function test_ftp {
-	echo "[*] scanning FTP service"
+	info "[*] scanning FTP service"
 	if [ -z $2 ]; then
-		echo "[!] defaulting to FTP port 21"
+		warning "[!] defaulting to FTP port 21"
 		port=21
 	else
 		port=$2
@@ -78,9 +140,9 @@ function test_ftp {
 }
 
 function test_ssh {
-	echo "[*] scanning SSH service"
+	info "[*] scanning SSH service"
 	if [ -z $2 ]; then
-		echo "[!] defaulting to SSH port 22"
+		warning "[!] defaulting to SSH port 22"
 		port=22
 	else
 		port=$2
@@ -91,9 +153,9 @@ function test_ssh {
 
 
 function test_smtp {
-	echo "[*] scanning SMTP service"
+  info "[*] scanning SMTP service"
 	if [ -z $2 ]; then
-		echo "[!] defaulting to SMTP port 25"
+		warning "[!] defaulting to SMTP port 25"
 		port=25
 	else
 		port=$2
@@ -103,9 +165,9 @@ function test_smtp {
 }
 
 function test_dns {
-	echo "[*] scanning DNS service"
+	info "[*] scanning DNS service"
 	if [ -z $2 ]; then
-		echo "[!] defaulting to DNS port 53"
+		warning "[!] defaulting to DNS port 53"
 		port=53
 	else
 		port=$2
@@ -115,9 +177,9 @@ function test_dns {
 }
 
 function test_mysql {
-	echo "[*] scanning MYSQL service"
+	info "[*] scanning MYSQL service"
 	if [ -z $2 ]; then
-		echo "[!] defaulting to MYSQL port 3306"
+		warning "[!] defaulting to MYSQL port 3306"
 		port=3306
 	else
 		port=$2
@@ -130,7 +192,7 @@ function test_mysql {
 
 function test_http {
 	if [ -z $2 ]; then
-		echo "[!] defaulting to HTTP website"
+		warning "[!] defaulting to HTTP website"
 		secure=false
 	else
 		secure=$2
@@ -138,11 +200,11 @@ function test_http {
 
 	if [ -z $3 ]; then
 		if [ $secure == "false" ]; then
-			echo "[!] defaulting to port 80"
+			warning "[!] defaulting to port 80"
 			port=80
 		fi
 		if [ $secure == "true" ]; then
-			echo "[!] defaulting to port 443"
+			warning "[!] defaulting to port 443"
 			port=443
 		fi
 	else
@@ -151,7 +213,7 @@ function test_http {
 
   if [ -x $DIRB ]; then
 		if [ ! -f $OUTPUT_FOLDER_BASE$1/$1_$port.dirb ]; then
-			echo "[*] launching dirb"
+			info "[*] launching dirb"
 			if [ $secure == "false" ]; then
 				$DIRB http://$1:$port -S -o $OUTPUT_FOLDER_BASE$1/$1_$port.dirb 2> /dev/null > /dev/null
 			fi
@@ -159,15 +221,15 @@ function test_http {
 				$DIRB https://$1:$port -S -o $OUTPUT_FOLDER_BASE$1/$1_$port.dirb 2> /dev/null > /dev/null
 			fi
 		else
-			echo "[!] $OUTPUT_FOLDER_BASE$1/$1_$port.dirb exists. Skipping scan"
+			warning "[!] $OUTPUT_FOLDER_BASE$1/$1_$port.dirb exists. Skipping scan"
 		fi
   else
-    echo "[!] $APPNAME skipping dirb"
+    warning "[!] $APPNAME skipping dirb"
   fi
 
 	if [ -x $NIKTO ]; then
 		if [ ! -f $OUTPUT_FOLDER_BASE$1/$1_$port.nikto ]; then
-			echo "[*] launching nikto"
+			info "[*] launching nikto"
 			if [ $secure == "false" ]; then
 				$NIKTO -host http://$1 -port $port -Format txt -output $OUTPUT_FOLDER_BASE$1/$1_$port.nikto  2> /dev/null > /dev/null
 			fi
@@ -175,14 +237,14 @@ function test_http {
 				$NIKTO -host https://$1 -ssl -port $port -Format txt -output $OUTPUT_FOLDER_BASE$1/$1_$port.nikto  2> /dev/null > /dev/null
 			fi
 	else
-			echo "[!] $OUTPUT_FOLDER_BASE$1/$1_$port.nikto exists. Skipping scan"
+			warning "[!] $OUTPUT_FOLDER_BASE$1/$1_$port.nikto exists. Skipping scan"
 	fi
   else
-    echo "[!] $APPNAME skipping nikto"
+    warning "[!] $APPNAME skipping nikto"
   fi
 
-	echo "[+] you may want to manual launch $WFUZZ against $1"
-	echo "[+] if DAV enabled you may want to launch $DAVTEST -url $1"
+	warning "[!] you may want to manual launch $WFUZZ against $1"
+	warning "[!] if DAV enabled you may want to launch $DAVTEST -url $1"
 
 	if [ $secure == "true" ]; then 
 		fetch_http_web_root
@@ -193,11 +255,12 @@ function test_http {
 	whatweb_web
 
 	if [ -x $SQLMAP ]; then
-		echo "[*] launching sqlmap"
+		info "[*] launching sqlmap"
 		$SQLMAP -u http://$1 --crawl=3 --output-dir=$SAVEDIR --batch
 	fi
 
 }
+
 NMAP=`which nmap`
 SEARCHSPLOIT=`which searchsploit`
 DIRB=`which dirb`
@@ -208,37 +271,42 @@ WHATWEB=`which whatweb`
 WFUZZ=`which wfuzz`
 DAVTEST=`which davtest`
 
-# SQLMAP=`which sqlmap`
-SQLMAP="/0"
+SQLMAP=`which sqlmap`
 
 
 APPNAME=`basename $0`
-VERSION="0.8"
+VERSION="0.9"
 OUTPUT_FOLDER_BASE=./
+
+# Be polite. Say hello. It starts from here.
+greeting
 
 # Without nmap there is no way to go further.
 if [ ! -x $NMAP ]; then
-  echo "$APPNAME: can't find nmap executable"
+  error "$APPNAME: can't find nmap executable"
   exit 1
 fi
 
 if [ "$#" -ne 1 ]; then
-  echo "$APPNAME: missing target"
+  error "$APPNAME: missing target"
   echo "usage: $APPNAME: ip_address"
   exit 1
 fi
 
 SAVEDIR=$OUTPUT_FOLDER_BASE$1
-echo "[*] $APPNAME is recon $1. Saving results in $SAVEDIR"
+info "[*] $APPNAME is recon $1. Saving results in $SAVEDIR"
 mkdir -p $SAVEDIR
 touch $SAVEDIR/notes.txt
 
 if [ ! -f $SAVEDIR/$1_regular.nmap ]; then
-  echo "[*] launcing regular scan"
+  info "[*] launcing regular scan"
   $NMAP -sC -sV -v0 -A -T4 $1 --reason -oA $SAVEDIR/$1_regular
 else
-  echo "[!] $SAVEDIR/$1_regular.nmap exists. Skipping scan"
+  warning "[!] $SAVEDIR/$1_regular.nmap exists. Skipping scan"
 fi
+
+ports=$(open_port_list $SAVEDIR/$1_regular.gnmap)
+info "Interesting TCP ports found $ports"
 
 
 fine=`grep 21 $OUTPUT_FOLDER_BASE$1/$1_regular.gnmap | cut -f2 -d"/"`
@@ -290,45 +358,45 @@ fi
 fine=`grep 445 $OUTPUT_FOLDER_BASE$1/$1_regular.gnmap | cut -f2 -d"/"`
 if [ "$fine" == "open" ]; then
   if [ -x $SMBCLIENT ]; then
-    echo "[*] launching smbclient"
+    info "[*] launching smbclient"
     $SMBCLIENT -L $1 > $OUTPUT_FOLDER_BASE$1/$1.smbclient
   else
 		fine=`grep 139 $OUTPUT_FOLDER_BASE$1/$1_regular.gnmap | cut -f2 -d"/"`
 		if [ "$fine" == "open" ]; then
 			if [ -x $SMBCLIENT ]; then
-				echo "[*] launching smbclient"
+				info "[*] launching smbclient"
 				$SMBCLIENT -L $1 > $OUTPUT_FOLDER_BASE$1/$1.smbclient
 			else
-				echo "[!] $APPNAME skipping smbclient"
+				warning "[!] $APPNAME skipping smbclient"
 			fi
 		fi
   fi
 fi
 
 if [ ! -f $SAVEDIR/$1_full.nmap ]; then
-  echo "[*] launcing full scan"
+  info "[*] launcing full scan"
   $NMAP -v0 -p- -sT $1 --reason -oA $SAVEDIR/$1_full
 else
-  echo "[!] $SAVEDIR/$1_full.nmap exists. Skipping scan"
+  warning "[!] $SAVEDIR/$1_full.nmap exists. Skipping scan"
 fi
 
 if [ ! -f $SAVEDIR/$1_udp.nmap ]; then
-  echo "[*] launcing UDP full scan"
+  info "[*] launcing UDP full scan"
   $NMAP -v0 -p- -sU $1 --reason -oA $SAVEDIR/$1_udp
 else
-  echo "[!] $SAVEDIR/$1_udp.nmap exists. Skipping scan"
+  warning "[!] $SAVEDIR/$1_udp.nmap exists. Skipping scan"
 fi
 
 
 if [ -x $SEARCHSPLOIT ]; then
   SPLOIT_OUTPUT=$OUTPUT_FOLDER_BASE$1/$1_sploits
   rm -rf foo
-  echo "[*] looking for exploits"
+  info "[*] looking for exploits"
   $SEARCHSPLOIT --nmap $OUTPUT_FOLDER_BASE$1/$1_full.xml > /dev/null 2> "foo"
   cat "foo" | sed 's/^... //' > $SPLOIT_OUTPUT
-  echo "[+] please check $SPLOIT_OUTPUT for available exploits"
+  info "[*] please check $SPLOIT_OUTPUT for available exploits"
   rm -rf foo
 else
-  echo "[!] $APPNAME skipping searchsploit"
+  warning "[!] $APPNAME skipping searchsploit"
 fi
 
