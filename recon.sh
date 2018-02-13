@@ -14,10 +14,6 @@
 . base_daemon_tests.sh
 . web.sh
 
-
-
-
-
 args=`getopt hvi: $*`
 if [ $? != 0 ]
 then
@@ -65,21 +61,24 @@ test_and_exit_if_not_found $NMAP
 
 declare SAVEDIR=$OUTPUT_FOLDER_BASE$target
 
-info "$APPNAME is recon $target. Saving results in $SAVEDIR"
+info "recon $target" 
+info "saving results in $SAVEDIR"
 create_output_folder $SAVEDIR
 
-basic_portscan $target $SAVEDIR
-ports=$(open_port_list $SAVEDIR/scans/$target_regular.gnmap)
+#basic_portscan $target $SAVEDIR
+
+greppable="$SAVEDIR/scans/$target""_regular.gnmap"
+
+ports=$(open_port_list $greppable)
 info "Interesting TCP ports found $ports"
 
-
-launch_scan_if_open "ftp" $target $SAVEDIR/scans/$target_regular.gnmap $SAVEDIR/scans
-launch_scan_if_open "ssh" $target $SAVEDIR/scans/$target_regular.gnmap $SAVEDIR/scans
-launch_scan_if_open "smtp" $target $SAVEDIR/scans/$target_regular.gnmap $SAVEDIR/scans
-launch_scan_if_open "dns" $target $SAVEDIR/scans/$target_regular.gnmap $SAVEDIR/scans
-launch_scan_if_open "mysql" $target $SAVEDIR/scans/$target_regular.gnmap $SAVEDIR/scans
-launch_scan_if_open "web" $target $SAVEDIR/scans/$target_regular.gnmap $SAVEDIR/scans
-launch_scan_if_open "smb" $target $SAVEDIR/scans/$target_regular.gnmap $SAVEDIR/scans
+launch_scan_if_open "ftp" $target $greppable $SAVEDIR/scans
+launch_scan_if_open "ssh" $target $greppable $SAVEDIR/scans
+launch_scan_if_open "smtp" $target $greppable $SAVEDIR/scans
+launch_scan_if_open "dns" $target $greppable $SAVEDIR/scans
+launch_scan_if_open "mysql" $target $greppable $SAVEDIR/scans
+launch_scan_if_open "web" $target $greppable $SAVEDIR/scans
+launch_scan_if_open "smb" $target $greppable $SAVEDIR/scans
 
 full_portscan $target $SAVEDIR
 find_sploits $target $SAVEDIR
