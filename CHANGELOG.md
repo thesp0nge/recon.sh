@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - colours
 ### Changed
 - the basepath for result is now defaulted to $HOME/$APPNAME
+- Added a new is_port_open method to check for opened port using $ports
 
 ## [0.9] - 2018-02-06
 ###  Added
