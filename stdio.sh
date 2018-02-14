@@ -20,7 +20,7 @@ declare -r WHITE=$(echo -en '\033[01;37m')
 
 
 declare -r APPNAME=$(basename $0)
-declare -r VERSION="0.9"
+declare -r VERSION="0.10"
 declare -r OUTPUT_FOLDER_BASE=$HOME/$APPNAME/
 
 
@@ -30,11 +30,24 @@ function greeting() {
 
 function usage() {
   greeting
-  echo "$APPNAME is a reconnaissance script to be used to collect information to be used in a penetration test."
-  echo "usage: $APPNAME [-vh] -i ip"
+  echo "$APPNAME gathers information against a specific server."
+	echo "Such information can be useful to find a way to get into that server in a penetration test."
+	echo 
+  echo "usage: $APPNAME [-vh] -i ip -p port -P protocol"
   echo -e "\t-v\tshows version"
   echo -e "\t-h\tprints this help"
   echo -e "\t-i ip\tuse ip address as scan argument"
+	echo -e "\t-p port\tfocus on given port number"
+	echo -e "\t-P protocol\tlaunch available protocol tests"
+	echo
+	echo -e "Available protocols are:"
+	echo -e "\t* ftp"
+	echo -e "\t* ssh"
+	echo -e "\t* smtp"
+	echo -e "\t* dns"
+	echo -e "\t* smb"
+	echo -e "\t* mysql"
+	echo -e "\t* web"
   
 }
 function version() {
@@ -42,16 +55,19 @@ function version() {
 }
 
 function debug() {
-  echo ${LYELLOW}"[D]" $APPNAME: $1${RESTORE}
+  echo ${LYELLOW}"[`date +%H:%M:%S`] [DEBUG]" $APPNAME: $1${RESTORE}
 }
 function warning() {
-  echo ${YELLOW}"[*]" $APPNAME: $1${RESTORE}
+  echo ${YELLOW}"[`date +%H:%M:%S`] [WARNING]" $APPNAME: $1${RESTORE}
+}
+function log() {
+  echo ${WHITE}"[`date +%H:%M:%S`] [*]" $APPNAME: $1${RESTORE}
 }
 function info() {
-  echo ${GREEN}"[-]" $APPNAME: $1${RESTORE}
+  echo ${GREEN}"[`date +%H:%M:%S`] [INFO]" $APPNAME: $1${RESTORE}
 }
 function error() {
-  echo ${RED}"[!]" $APPNAME: $1${RESTORE}
+  echo ${RED}"[`date +%H:%M:%S`] [ERROR]" $APPNAME: $1${RESTORE}
 }
 
 

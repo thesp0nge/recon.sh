@@ -14,7 +14,7 @@
 . base_daemon_tests.sh
 . web.sh
 
-args=`getopt hvi: $*`
+args=`getopt hvi:p:P: $*`
 if [ $? != 0 ]
 then
   usage
@@ -33,9 +33,15 @@ do
       usage
       exit 3
       ;;
+		-p)
+			port="$2"; shift; shift;
+			;;
+		-P)
+			proto="$2"; shift; shift;
+			;;
     -i)
-      target="$2"; shift;
-      shift;;
+      target="$2"; shift;shift;
+			;;
     --)
     shift; break;;
   esac
@@ -61,29 +67,38 @@ test_and_exit_if_not_found $NMAP
 
 declare SAVEDIR=$OUTPUT_FOLDER_BASE$target
 
-info "recon $target" 
-info "saving results in $SAVEDIR"
+log "recon $target" 
+log "saving results in $SAVEDIR"
 create_output_folder $SAVEDIR
 
-#basic_portscan $target $SAVEDIR
+if [ -z $port ]; then
+	basic_portscan $target $SAVEDIR
+	greppable="$SAVEDIR/scans/$target""_regular.gnmap"
+	ports=$(open_port_list $greppable)
+	log "Interesting TCP ports found $ports"
 
-greppable="$SAVEDIR/scans/$target""_regular.gnmap"
+else
+	basic_portscan_for_a_given_port $target $SAVEDIR $port
+	greppable="$SAVEDIR/scans/$target""_regular_on_port_$port.gnmap"
+fi
 
-ports=$(open_port_list $greppable)
-info "Interesting TCP ports found $ports"
+if [ -z $proto ]; then
+	launch_scan_if_open "ftp" $target $greppable $SAVEDIR/scans $port
+	launch_scan_if_open "ssh" $target $greppable $SAVEDIR/scans $port
+	launch_scan_if_open "smtp" $target $greppable $SAVEDIR/scans $port
+	launch_scan_if_open "dns" $target $greppable $SAVEDIR/scans $port
+	launch_scan_if_open "mysql" $target $greppable $SAVEDIR/scans $port
+	launch_scan_if_open "web" $target $greppable $SAVEDIR/scans $port
+	launch_scan_if_open "smb" $target $greppable $SAVEDIR/scans $port
+else
+	launch_scan_if_open $proto $target $greppable $SAVEDIR/scans $port
 
-launch_scan_if_open "ftp" $target $greppable $SAVEDIR/scans
-launch_scan_if_open "ssh" $target $greppable $SAVEDIR/scans
-launch_scan_if_open "smtp" $target $greppable $SAVEDIR/scans
-launch_scan_if_open "dns" $target $greppable $SAVEDIR/scans
-launch_scan_if_open "mysql" $target $greppable $SAVEDIR/scans
-launch_scan_if_open "web" $target $greppable $SAVEDIR/scans
-launch_scan_if_open "smb" $target $greppable $SAVEDIR/scans
+fi
 
 full_portscan $target $SAVEDIR
 find_sploits $target $SAVEDIR
 
 udp_portscan $target $SAVEDIR
 
-info "Bye."
+log "Bye."
 

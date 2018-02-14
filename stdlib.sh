@@ -64,77 +64,120 @@ function open_port_list() {
 # $2 - IP
 # $3 - gnmap file
 # $4 - savedir
+# $5 - port number (optional)
 function launch_scan_if_open() {
 
   if [ "$1" == "ftp" ]; then
-		o=$(is_port_open 21)
+		if [ -z $5 ]; then
+			p=21
+		else
+			p=$5
+		fi
+
+		o=$(is_port_open $p)
 		if [ "$o" == "1" ]; then
-      test_ftp $2 21 $4
+      test_ftp $2 $p $4
     fi
   fi
 
   if [ "$1" == "ssh" ]; then
-		o=$(is_port_open 22)
+		if [ -z $5 ]; then
+			p=22
+		else
+			p=$5
+		fi
+		o=$(is_port_open $p)
 		if [ "$o" == "1" ]; then
-      test_ssh $2 22 $4
+      test_ssh $2 $p $4
     fi
   fi
 
   if [ "$1" == "smtp" ]; then
-		o=$(is_port_open 25)
+		if [ -z $5 ]; then
+			p=25
+		else
+			p=$5
+		fi
+		o=$(is_port_open $p)
 		if [ "$o" == "1" ]; then
-      test_smtp $2 25 $4
+      test_smtp $2 $p $4
     fi
   fi
 
   if [ "$1" == "dns" ]; then
-		o=$(is_port_open 53)
+		if [ -z $5 ]; then
+			p=53
+		else
+			p=$5
+		fi
+		o=$(is_port_open $p)
 		if [ "$o" == "1" ]; then
-      test_dns $2 53 $4
+      test_dns $2 $p $4
     fi
   fi
 
 
-  if [ "$1" == "smb" ]; then
-
-		o=$(is_port_open 445)
-		if [ "$o" == "1" ]; then
-      test_smb $2 445 $4
-    else
-			o=$(is_port_open 139)
+	if [ "$1" == "smb" ]; then
+		if [ -z $5 ]; then
+			o=$(is_port_open 445)
 			if [ "$o" == "1" ]; then
-				test_smb $2 139 $4
+				test_smb $2 445 $4
+			else
+				o=$(is_port_open 139)
+				if [ "$o" == "1" ]; then
+					test_smb $2 139 $4
+				fi
 			fi
-    fi
-  fi
+		else
+			p=$5
+			test_smb $2 $p $4
+		fi
+	fi
 
   if [ "$1" == "mysql" ]; then
-		o=$(is_port_open 3306)
+
+		if [ -z $5 ]; then
+			p=3306
+		else
+			p=$5
+		fi
+		o=$(is_port_open $p)
 		if [ "$o" == "1" ]; then
-      test_mysql $1 3306 $4
+      test_mysql $2 $p $4
     fi
   fi
 
   # TODO: a better approach must be done to define a single portlist
   if [ "$1" == "web" ]; then
-		o=$(is_port_open 80)
-		if [ "$o" == "1" ]; then
-      test_http $1 false 80 $4
-    fi
 
-		o=$(is_port_open 8080)
-		if [ "$o" == "1" ]; then
-      test_http $1 false 8080  $4
-    fi
+		if [ -z $5 ]; then
+			o=$(is_port_open 80)
+			if [ "$o" == "1" ]; then
+				test_http $2 false 80 $4
+			fi
 
-		o=$(is_port_open 443)
-		if [ "$o" == "1" ]; then
-      test_http $1 true 443  $4
-    fi
+			o=$(is_port_open 8080)
+			if [ "$o" == "1" ]; then
+				test_http $2 false 8080  $4
+			fi
 
-		o=$(is_port_open 8443)
-		if [ "$o" == "1" ]; then
-      test_http $1 true 8443 $4
-    fi
-  fi
+			o=$(is_port_open 443)
+			if [ "$o" == "1" ]; then
+				test_http $2 true 443  $4
+			fi
+
+			o=$(is_port_open 8443)
+			if [ "$o" == "1" ]; then
+				test_http $2 true 8443 $4
+			fi
+
+		else
+			p=$5
+
+			o=$(is_port_open $p)
+			if [ "$o" == "1" ]; then
+				test_http $2 false $p $4
+			fi
+		fi
+	fi
 }

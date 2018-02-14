@@ -64,18 +64,18 @@ function test_http {
 	warning "you may want to manual launch $WFUZZ against $1"
 	warning "if DAV enabled you may want to launch $DAVTEST -url $1"
 
-	if [ $secure == "true" ]; then 
+	if [ $secure == "false" ]; then 
 		fetch_http_web_root $1 $port $4
 	else
 		fetch_https_web_root $1 $port $4
 	fi
 
 
-	whatweb_web $1 $secure $4
+	whatweb_web $1 $secure $4 $port
 
 	if [ -x $SQLMAP ]; then
 		info "launching sqlmap"
-		$SQLMAP -u http://$1 --crawl=3 --output-dir=$4 --batch
+		$SQLMAP -u http://$1 --crawl=3 --output-dir=$4 --batch >/dev/null 2> /dev/null
 	fi
 
 }
@@ -87,10 +87,10 @@ function whatweb_web {
 
     info "launching whatweb on $1"
     if [ $2 == "false" ]; then
-      $WHATWEB -v http://$1 > $3/$1.whatweb
+      $WHATWEB -v http://$1:$4 > $3/$1.whatweb
     fi
     if [ $2 == "true" ]; then
-      $WHATWEB -v https://$1 > $3/$1.whatweb
+      $WHATWEB -v https://$1:$4 > $3/$1.whatweb
     fi
 
   fi
@@ -104,7 +104,7 @@ function fetch_http_web_root {
 function fetch_https_web_root {
   info "[*] fetching website root on $1 (port $2) - HTTPS" 
   $CURL -i -L https://$1:$2
-	$NMAP -sV -p $port --script=ssl-heartbleed.nse $1 -oA $4/$1_$port_hearbleed
+	$NMAP -sV -p $port -v0 --script=ssl-heartbleed.nse $1 -oA $4/$1_$port_hearbleed 
 }
 
 

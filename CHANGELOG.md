@@ -6,9 +6,14 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 ## [0.10] - unreleased
-###   Added
+### Added
 - splitted the script in more files
 - colours
+- support to ask for a specific protocol test suite
+- support for a given port
+- basic_portscan_for_a_given_port to limit the scan only on a specific port.
+	Assuming TCP by now
+
 ### Changed
 - the basepath for result is now defaulted to $HOME/$APPNAME
 - Added a new is_port_open method to check for opened port using $ports
