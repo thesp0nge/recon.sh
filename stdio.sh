@@ -23,13 +23,18 @@ declare -r APPNAME=$(basename $0)
 declare -r VERSION="0.10"
 declare -r OUTPUT_FOLDER_BASE=$HOME/$APPNAME/
 
-
 function greeting() {
-  echo "$APPNAME v$VERSION - paolo@codiceinsicuro.it"
+	echo ${LBLUE}"                                _      ${BLUE}v$VERSION${LBLUE}"
+	echo " _ __ ___  ___ ___  _ __    ___| |__  "
+	echo "| '__/ _ \/ __/ _ \| '_ \  / __| '_ \ "
+	echo "| | |  __/ (_| (_) | | | |_\__ \ | | |"
+	echo "|_|  \___|\___\___/|_| |_(_)___/_| |_|"
+	echo ${RESTORE}
 }
 
 function usage() {
   greeting
+	echo 
   echo "$APPNAME gathers information against a specific server."
 	echo "Such information can be useful to find a way to get into that server in a penetration test."
 	echo 
@@ -40,14 +45,7 @@ function usage() {
 	echo -e "\t-p port\tfocus on given port number"
 	echo -e "\t-P protocol\tlaunch available protocol tests"
 	echo
-	echo -e "Available protocols are:"
-	echo -e "\t* ftp"
-	echo -e "\t* ssh"
-	echo -e "\t* smtp"
-	echo -e "\t* dns"
-	echo -e "\t* smb"
-	echo -e "\t* mysql"
-	echo -e "\t* web"
+	echo -e "Available protocols are: ftp, ssh, smtp, dns, smb, mysql, web"
   
 }
 function version() {

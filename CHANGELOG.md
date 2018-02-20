@@ -7,6 +7,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [0.10] - unreleased
 ### Added
+- a colored ascii art banner inspired from sqlmap
 - splitted the script in more files
 - colours
 - support to ask for a specific protocol test suite
