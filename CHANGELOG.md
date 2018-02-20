@@ -16,6 +16,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 	Assuming TCP by now
 
 ### Changed
+- all aux libs are now in a lib/ directory and recon.sh now read libs starting
+	from his own directory. Script is ready to be installed system-wide
 - the basepath for result is now defaulted to $HOME/$APPNAME
 - Added a new is_port_open method to check for opened port using $ports
 

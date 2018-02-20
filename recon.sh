@@ -1,18 +1,20 @@
 #!/usr/bin/env bash
+#                                 _     
+#  _ __ ___  ___ ___  _ __    ___| |__  
+# | '__/ _ \/ __/ _ \| '_ \  / __| '_ \ 
+# | | |  __/ (_| (_) | | | |_\__ \ | | |
+# |_|  \___|\___\___/|_| |_(_)___/_| |_|
 #
-# recon.sh - reconnaissance script for first stage of a penetration test
+# reconnaissance script for first stage of a penetration test
 # 
 # Made with love, vim and shell by thesp0nge - paolo@codiceinsicuro.it
-#
-# Changelog
-# 
 
-. stdio.sh
-. aux_tools.sh
-. stdlib.sh
-. portscan.sh
-. base_daemon_tests.sh
-. web.sh
+. `dirname $0`/lib/stdio.sh
+. `dirname $0`/lib/aux_tools.sh
+. `dirname $0`/lib/stdlib.sh
+. `dirname $0`/lib/portscan.sh
+. `dirname $0`/lib/base_daemon_tests.sh
+. `dirname $0`/lib/web.sh
 
 args=`getopt hvi:p:P: $*`
 if [ $? != 0 ]
@@ -49,7 +51,7 @@ done
 
 if [ $UID -ne 0 -a $EUID -ne 0 ]; then
   error "this script must be executed as root"
-#  exit 1
+  exit 1
 fi
 
 if [ -z $target ]; then
