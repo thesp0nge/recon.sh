@@ -9,12 +9,18 @@
 # 
 # Made with love, vim and shell by thesp0nge - paolo@codiceinsicuro.it
 
-. `dirname $0`/lib/stdio.sh
-. `dirname $0`/lib/aux_tools.sh
-. `dirname $0`/lib/stdlib.sh
-. `dirname $0`/lib/portscan.sh
-. `dirname $0`/lib/base_daemon_tests.sh
-. `dirname $0`/lib/web.sh
+if [ ! -L $0 ]; then
+	SCRIPATH="$( cd "$(dirname "$0")" ; pwd -P )"
+else
+	SCRIPATH=`dirname $(readlink -f $0)`
+fi
+
+. $SCRIPATH/lib/stdio.sh
+. $SCRIPATH/lib/aux_tools.sh
+. $SCRIPATH/lib/stdlib.sh
+. $SCRIPATH/lib/portscan.sh
+. $SCRIPATH/lib/base_daemon_tests.sh
+. $SCRIPATH/lib/web.sh
 
 args=`getopt hvi:p:P: $*`
 if [ $? != 0 ]
