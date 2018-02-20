@@ -7,7 +7,7 @@ penetration test against a target system.
 
 Simply run install.sh script, you must be root:
 
-> # ./install.sh
+> \# ./install.sh
 
 recon.sh will be installed in /usr/local/share/recon.sh and a symbolic link
 will be created in /usr/local/sbin, so make sure to add it into your PATH.
